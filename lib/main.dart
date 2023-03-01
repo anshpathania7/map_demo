@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:map_demo/providers/map_provider.dart';
+import 'package:provider/provider.dart';
 
 import 'screens/map_sample.dart';
 
@@ -11,6 +13,16 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: MapSample());
+    return MaterialApp(
+      home: MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+              create: (context) => MapProvider()..init(),
+            ),
+          ],
+          builder: (context, _) {
+            return const MapSample();
+          }),
+    );
   }
 }
