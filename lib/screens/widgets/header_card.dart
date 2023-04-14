@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 class HeaderCard extends StatelessWidget {
   String distance;
+  String? tripId;
 
   HeaderCard({
     Key? key,
     required this.distance,
+    this.tripId,
   }) : super(key: key);
 
   @override
@@ -34,18 +36,18 @@ class HeaderCard extends StatelessWidget {
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
+              children: [
+                const Text(
                   "Welcome Raj",
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 18,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  "Trip Xyz",
-                  style: TextStyle(
+                  "Trip ${tripId ?? "xyz"}",
+                  style: const TextStyle(
                     fontWeight: FontWeight.w400,
                     fontSize: 14,
                   ),

@@ -92,7 +92,10 @@ class MapSampleState extends State<MapSample> {
                             ),
                           ),
                         ),
-                      HeaderCard(distance: state.totalDistance),
+                      HeaderCard(
+                        distance: state.totalDistance,
+                        tripId: state.fakeMapData?.tripId,
+                      ),
                       Flexible(
                         child: Timeline.tileBuilder(
                           shrinkWrap: true,
