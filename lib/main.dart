@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:map_demo/providers/map_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:map_demo/bloc/map_bloc/map_bloc.dart';
 
 import 'screens/map_sample.dart';
 
@@ -14,15 +14,10 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MultiProvider(
-          providers: [
-            ChangeNotifierProvider(
-              create: (context) => MapProvider()..init(),
-            ),
-          ],
-          builder: (context, _) {
-            return const MapSample();
-          }),
+      home: BlocProvider(
+        create: (_) => MapBloc()..add(Initial()),
+        child: const MapSample(),
+      ),
     );
   }
 }
