@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:map_demo/bloc/map_bloc/map_bloc.dart';
+import 'package:map_demo/images.dart';
 import 'package:map_demo/screens/widgets/header_card.dart';
 import 'package:map_demo/screens/widgets/map_dot_indicator.dart';
 import 'package:timelines/timelines.dart';
@@ -19,11 +20,14 @@ class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
-  Set<Marker> _generateMarkersSet(List<LatLng> latlngs) {
+  Future<Set<Marker>> _generateMarkersSet(List<LatLng> latlngs) async {
     final markers = <Marker>{};
+    final ic = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration.empty, Png.ic_car);
     for (int i = 0; i < latlngs.length; i++) {
       markers.add(
         Marker(
+          icon: (i == 0) ? ic : BitmapDescriptor.defaultMarker,
           markerId: MarkerId(
             i.toString(),
           ),
@@ -51,23 +55,29 @@ class MapSampleState extends State<MapSample> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        height: 400,
-                        width: double.maxFinite,
-                        child: GoogleMap(
-                          mapType: MapType.normal,
-                          initialCameraPosition: CameraPosition(
-                            target: state.getFakeMapDataLatLngs().first,
-                            zoom: 14,
-                          ),
-                          markers: _generateMarkersSet(
+                      FutureBuilder(
+                          future: _generateMarkersSet(
                               state.getFakeMapDataLatLngs()),
-                          polylines: Set<Polyline>.of(state.polylines!.values),
-                          onMapCreated: (GoogleMapController controller) {
-                            _controller.complete(controller);
-                          },
-                        ),
-                      ),
+                          initialData: const <Marker>{},
+                          builder: (context, snapshot) {
+                            return SizedBox(
+                              height: 400,
+                              width: double.maxFinite,
+                              child: GoogleMap(
+                                mapType: MapType.normal,
+                                initialCameraPosition: CameraPosition(
+                                  target: state.getFakeMapDataLatLngs().first,
+                                  zoom: 14,
+                                ),
+                                markers: snapshot.data!,
+                                polylines:
+                                    Set<Polyline>.of(state.polylines!.values),
+                                onMapCreated: (GoogleMapController controller) {
+                                  _controller.complete(controller);
+                                },
+                              ),
+                            );
+                          }),
                       if (state.showGpsErrorMessage)
                         InkWell(
                           onTap: () => context
