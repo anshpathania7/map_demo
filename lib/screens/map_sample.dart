@@ -9,8 +9,6 @@ import 'package:map_demo/screens/widgets/header_card.dart';
 import 'package:map_demo/screens/widgets/map_dot_indicator.dart';
 import 'package:timelines/timelines.dart';
 
-import 'widgets/mark_location_dialog.dart';
-
 class MapSample extends StatefulWidget {
   const MapSample({Key? key}) : super(key: key);
 
@@ -23,9 +21,6 @@ class MapSampleState extends State<MapSample> {
       Completer<GoogleMapController>();
 
   Future<Set<Marker>> _generateMarkersSet(List<LatLng> latlngs) async {
-    if (latlngs.isEmpty) {
-      return {};
-    }
     final markers = <Marker>{};
     final ic = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration.empty, Png.ic_car);
@@ -49,19 +44,8 @@ class MapSampleState extends State<MapSample> {
       builder: (context, state) {
         return Scaffold(
           floatingActionButton: FloatingActionButton(
-            onPressed: () => showDialog(
-              context: context,
-              builder: (_) => MarkLocationDialog(
-                onMarkDestination: () {
-                  context.read<MapBloc>().add(MarkAsDestinationReached());
-                  Navigator.pop(context);
-                },
-                onMarkWaypoint: () {
-                  context.read<MapBloc>().add(OnTapMarkCompleteBtn());
-                  Navigator.pop(context);
-                },
-              ),
-            ),
+            onPressed: () =>
+                context.read<MapBloc>().add(OnTapMarkCompleteBtn()),
             child: const Text("Mark"),
           ),
           body: (state.showLoading)
@@ -72,7 +56,8 @@ class MapSampleState extends State<MapSample> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       FutureBuilder(
-                          future: _generateMarkersSet(state.latLngList),
+                          future: _generateMarkersSet(
+                              state.getFakeMapDataLatLngs()),
                           initialData: const <Marker>{},
                           builder: (context, snapshot) {
                             return SizedBox(
@@ -81,14 +66,12 @@ class MapSampleState extends State<MapSample> {
                               child: GoogleMap(
                                 mapType: MapType.normal,
                                 initialCameraPosition: CameraPosition(
-                                  target: state.latLngList.first,
+                                  target: state.getFakeMapDataLatLngs().first,
                                   zoom: 14,
                                 ),
-                                myLocationEnabled: true,
                                 markers: snapshot.data!,
-                                polylines: (state.polyline == null)
-                                    ? {}
-                                    : {state.polyline!},
+                                polylines:
+                                    Set<Polyline>.of(state.polylines!.values),
                                 onMapCreated: (GoogleMapController controller) {
                                   _controller.complete(controller);
                                 },
@@ -121,7 +104,7 @@ class MapSampleState extends State<MapSample> {
                         ),
                       HeaderCard(
                         distance: state.totalDistance,
-                        tripId: "1234",
+                        tripId: state.fakeMapData?.tripId,
                       ),
                       Flexible(
                         child: Timeline.tileBuilder(
@@ -131,8 +114,8 @@ class MapSampleState extends State<MapSample> {
                           builder: TimelineTileBuilder.connected(
                             connectionDirection: ConnectionDirection.after,
                             indicatorBuilder: (context, index) {
-                              return state.hasReachedFinalPosition &&
-                                      index == state.getAddresses.length - 1
+                              return index ==
+                                      state.getFakeMapDataLatLngs().length - 1
                                   ? const Padding(
                                       padding:
                                           EdgeInsets.symmetric(vertical: 6.0),
@@ -171,8 +154,7 @@ class MapSampleState extends State<MapSample> {
                                 () {
                                   if (i == 0) {
                                     return "Pickup/Start:\n${state.getAddresses[i]}";
-                                  } else if (i == state.latLngList.length - 1 &&
-                                      state.hasReachedFinalPosition) {
+                                  } else if (i == 3) {
                                     return "Drop-off/Complete:\n${state.getAddresses[i]}";
                                   } else {
                                     return "Waypoint:\n${state.getAddresses[i]}";

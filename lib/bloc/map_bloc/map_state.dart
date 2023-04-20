@@ -2,38 +2,54 @@ part of 'map_bloc.dart';
 
 class MapState {
   bool showLoading = true;
-  final LatLng? currentLocation;
+  final LatLng? userLocation;
+  final FakeMapData? fakeMapData;
   final int? currentPosition;
-  final bool hasReachedFinalPosition;
-  final Polyline? polyline;
+  final bool? hasReachedFinalPosition;
+  final Map<PolylineId, Polyline>? polylines;
   final DistanceMatrixModel? distanceMatrixModel;
-  final List<LatLng> latLngList;
-  final List<LatLng> waypoint;
+  final List<LatLng>? polylineCoordinates;
 
   final String gpsLocationErrorMessage;
 
+  //Mapping FakeMapData Object to LatLng List
+  List<LatLng> getFakeMapDataLatLngs() {
+    final fakeMapDataLatLngs = List<LatLng>.from(
+      fakeMapData!.location!.map(
+        (e) => LatLng(
+          double.parse(e.latitude!),
+          double.parse(e.longitude!),
+        ),
+      ),
+    );
+    if (userLocation != null) {
+      fakeMapDataLatLngs.insert(0, userLocation!);
+    }
+    return fakeMapDataLatLngs;
+  }
+
   bool get showGpsErrorMessage => gpsLocationErrorMessage.isNotEmpty;
   MapState(
-    this.currentLocation,
+    this.userLocation,
     this.currentPosition,
     this.hasReachedFinalPosition,
-    this.polyline,
+    this.polylines,
     this.distanceMatrixModel,
-    this.latLngList,
+    this.polylineCoordinates,
     this.gpsLocationErrorMessage,
+    this.fakeMapData,
     this.showLoading,
-    this.waypoint,
   );
 
   MapState.initialState()
       : currentPosition = 0,
-        polyline = null,
-        currentLocation = null,
+        polylines = {},
+        userLocation = null,
+        fakeMapData = null,
         distanceMatrixModel = null,
         gpsLocationErrorMessage = "",
         hasReachedFinalPosition = false,
-        waypoint = List<LatLng>.empty(growable: true),
-        latLngList = List<LatLng>.empty(growable: true);
+        polylineCoordinates = List<LatLng>.empty(growable: true);
 
   String get totalDistance {
     if (distanceMatrixModel == null) return "Loading";
@@ -66,27 +82,26 @@ class MapState {
   }
 
   MapState copyWith({
-    LatLng? currentLocation,
+    LatLng? userLocation,
     int? currentPosition,
     bool? hasReachedFinalPosition,
-    Polyline? polyline,
+    Map<PolylineId, Polyline>? polylines,
     DistanceMatrixModel? distanceMatrixModel,
-    List<LatLng>? latLngList,
+    List<LatLng>? polylineCoordinates,
     String? gpsLocationErrorMessage,
     FakeMapData? fakeMapData,
     bool? showLoading,
-    List<LatLng>? waypoint,
   }) {
     return MapState(
-      currentLocation ?? this.currentLocation,
+      userLocation ?? this.userLocation,
       currentPosition ?? this.currentPosition,
       hasReachedFinalPosition ?? this.hasReachedFinalPosition,
-      polyline ?? this.polyline,
+      polylines ?? this.polylines,
       distanceMatrixModel ?? this.distanceMatrixModel,
-      latLngList ?? this.latLngList,
+      polylineCoordinates ?? this.polylineCoordinates,
       gpsLocationErrorMessage ?? this.gpsLocationErrorMessage,
+      fakeMapData ?? this.fakeMapData,
       showLoading ?? this.showLoading,
-      waypoint ?? this.waypoint,
     );
   }
 }
